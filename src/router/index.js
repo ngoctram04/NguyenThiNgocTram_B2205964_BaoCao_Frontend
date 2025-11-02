@@ -1,32 +1,45 @@
+// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
-import AdminLayout from '../components/admin/AdminLayout.vue';
-import Dashboard from '../components/admin/Dashboard.vue';
-import BookList from '../components/admin/BookList.vue';
-import BookAdd from '../components/admin/BookAdd.vue';
-import BookEdit from '../components/admin/BookEdit.vue';
-import ReaderList from '../components/admin/ReaderList.vue';
-import StaffList from '../components/admin/StaffList.vue';
-import CategoryList from '../components/admin/CategoryList.vue';
+
+// Layout
+import AdminLayout from '../components/AdminLayout.vue';
+
+// Views (trang)
+import Dashboard from '../views/admin/Dashboard.vue';
+import BookList from '../views/admin/BookList.vue';
+import BookAdd from '../views/admin/BookAdd.vue';
+import BookEdit from '../views/admin/BookEdit.vue';
+import PublisherList from '../views/admin/PublisherList.vue';
+import PublisherAdd from '../views/admin/PublisherAdd.vue';
+import PublisherEdit from '../views/admin/PublisherEdit.vue';
+import ReaderList from '../views/admin/ReaderList.vue';
+import StaffList from '../views/admin/StaffList.vue';
+import CategoryList from '../views/admin/CategoryList.vue';
 
 const routes = [
   {
     path: '/',
     component: AdminLayout,
     children: [
-      { path: '', redirect: 'books' },
+      { path: '', redirect: '/books' }, // redirect mặc định
 
       // Dashboard
       { path: 'dashboard', name: 'Dashboard', component: Dashboard },
 
       // Book routes
-      { path: 'books', name: 'Books', component: BookList },
+      { path: 'books', name: 'BookList', component: BookList },
       { path: 'books/add', name: 'BookAdd', component: BookAdd },
-      { path: 'books/edit/:id', name: 'BookEdit', component: BookEdit },
+      { path: 'books/edit/:id', name: 'BookEdit', component: BookEdit, props: true },
+
+      // Publisher routes
+      { path: 'publishers', name: 'PublisherList', component: PublisherList },
+      { path: 'publishers/add', name: 'PublisherAdd', component: PublisherAdd },
+      { path: 'publishers/edit/:id', name: 'PublisherEdit', component: PublisherEdit, props: true },
 
       // Các route khác
-      { path: 'readers', name: 'Readers', component: ReaderList },
-      { path: 'staffs', name: 'Staffs', component: StaffList },
-      { path: 'categories', name: 'Categories', component: CategoryList },
+      { path: 'readers', name: 'ReaderList', component: ReaderList },
+      { path: 'staffs', name: 'StaffList', component: StaffList },
+      { path: 'categories', name: 'CategoryList', component: CategoryList },
     ],
   },
 ];

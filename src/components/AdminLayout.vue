@@ -1,9 +1,11 @@
 <template>
   <div class="admin-layout">
+    <!-- Sidebar -->
     <aside class="sidebar">
       <h2 class="sidebar-title">Quản lý thư viện</h2>
       <nav>
         <router-link to="/books" class="nav-item">Quản lý sách</router-link>
+        <router-link to="/publishers" class="nav-item">Quản lý nhà xuất bản</router-link>
         <router-link to="/readers" class="nav-item">Quản lý độc giả</router-link>
         <router-link to="/staffs" class="nav-item">Quản lý nhân viên</router-link>
         <router-link to="/categories" class="nav-item">Quản lý thể loại</router-link>
@@ -11,12 +13,12 @@
       </nav>
     </aside>
 
+    <!-- Main content -->
     <main class="main-content">
       <header class="topbar">
         <h3>{{ pageTitle }}</h3>
         <div class="user-info">Admin ▾</div>
       </header>
-
       <section class="content">
         <router-view />
       </section>
@@ -31,6 +33,11 @@ export default {
       const routeName = this.$route.name;
       switch(routeName) {
         case 'BookList': return 'Quản lý sách';
+        case 'BookAdd':
+        case 'BookEdit': return 'Quản lý sách';
+        case 'PublisherList': return 'Quản lý nhà xuất bản';
+        case 'PublisherAdd':
+        case 'PublisherEdit': return 'Quản lý nhà xuất bản';
         case 'ReaderList': return 'Quản lý độc giả';
         case 'StaffList': return 'Quản lý nhân viên';
         case 'CategoryList': return 'Quản lý thể loại';
@@ -46,16 +53,16 @@ export default {
 .admin-layout {
   display: flex;
   height: 100vh;
-  background: #f0f2f5;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Sidebar */
 .sidebar {
   width: 250px;
   background-color: #1976d2;
+  padding: 25px 20px;
   display: flex;
   flex-direction: column;
-  padding: 25px 20px;
   box-shadow: 3px 0 8px rgba(0,0,0,0.1);
   border-top-right-radius: 12px;
   border-bottom-right-radius: 12px;
@@ -65,7 +72,7 @@ export default {
   margin-bottom: 30px;
   font-size: 20px;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  color: white;
 }
 
 .nav-item {
@@ -75,8 +82,8 @@ export default {
   text-decoration: none;
   border-radius: 10px;
   margin-bottom: 12px;
-  transition: background 0.3s, transform 0.2s;
   font-weight: 500;
+  transition: background 0.3s, transform 0.2s;
 }
 
 .nav-item:hover,
@@ -99,14 +106,14 @@ export default {
   justify-content: space-between;
   align-items: center;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
-  font-weight: 500;
 }
 
 .content {
+  flex: 1;
   padding: 25px;
   background: #f9fafc;
-  flex: 1;
 }
 </style>
