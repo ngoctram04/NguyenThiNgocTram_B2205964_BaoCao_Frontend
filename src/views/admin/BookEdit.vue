@@ -1,52 +1,62 @@
 <template>
   <div class="book-edit">
-    <h2>Cập nhật sách</h2>
-
+    <h2>Chỉnh sửa sách</h2>
     <div v-if="loading" class="loading">Đang tải dữ liệu...</div>
-
+    <div v-else-if="!book" class="loading">Không tìm thấy sách</div>
     <BookForm
       v-else
+      :key="book.MaSach"
       :initial-data="book"
       :publishers="publishers"
-      :submit-url="`http://localhost:3000/api/admin/books/${book.MaSach}`"
+      :submit-url="`/books/${book.MaSach}`"
       submit-method="put"
       submit-text="Cập nhật sách"
+      @success="onUpdateSuccess"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import axios from 'axios';
-import BookForm from '../../components/BookForm.vue';
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import API from "../../services/api.server.js";
+import BookForm from "../../components/BookForm.vue";
 
 const route = useRoute();
-const book = ref({});
+const router = useRouter();
+
+const book = ref(null);
 const publishers = ref([]);
 const loading = ref(true);
 
 const fetchBook = async () => {
-  const res = await axios.get(`http://localhost:3000/api/admin/books/${route.params.id}`);
-  book.value = res.data;
+  try {
+    const res = await API.get(`/books/${route.params.id}`);
+    book.value = res.data || null;
+  } catch (err) {
+    console.error("fetchBook error:", err);
+    book.value = null;
+  }
 };
-
 
 const fetchPublishers = async () => {
-  const res = await axios.get('http://localhost:3000/api/admin/publishers');
-  publishers.value = res.data;
+  try {
+    const res = await API.get("/publishers");
+    publishers.value = res.data || [];
+  } catch (err) {
+    console.error("fetchPublishers error:", err);
+    publishers.value = [];
+  }
 };
 
-
+const onUpdateSuccess = () => {
+  alert("Cập nhật sách thành công!");
+  router.push("/books"); 
+};
 onMounted(async () => {
-  try {
-    await Promise.all([fetchBook(), fetchPublishers()]);
-  } catch (err) {
-    console.error(err);
-    alert('Không thể tải dữ liệu sách hoặc NXB!');
-  } finally {
-    loading.value = false;
-  }
+  loading.value = true;
+  await Promise.all([fetchBook(), fetchPublishers()]);
+  loading.value = false;
 });
 </script>
 
@@ -54,21 +64,23 @@ onMounted(async () => {
 .book-edit {
   max-width: 650px;
   margin: 0 auto;
-  background: #f9fafc;
   padding: 25px;
   border-radius: 12px;
+  background: #f9fafc;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 h2 {
   color: #1976d2;
-  margin-bottom: 20px;
   text-align: center;
+  margin-bottom: 20px;
+  font-weight: 600;
 }
 
 .loading {
   text-align: center;
   color: #666;
   font-style: italic;
+  padding: 20px 0;
 }
 </style>

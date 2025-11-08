@@ -27,7 +27,6 @@
               <button class="btn delete" @click="deletePublisher(publisher)">Xóa</button>
             </td>
           </tr>
-
           <tr v-if="publishers.length === 0">
             <td colspan="4" class="empty">Chưa có nhà xuất bản nào</td>
           </tr>
@@ -38,19 +37,20 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, onMounted } from "vue";
+import PublisherService from "../../services/publisher.service.js";
 
 const publishers = ref([]);
 const loading = ref(true);
 
 const fetchPublishers = async () => {
+  loading.value = true;
   try {
-    const res = await axios.get('http://localhost:3000/api/admin/publishers');
+    const res = await PublisherService.getAll();
     publishers.value = res.data;
   } catch (err) {
     console.error(err);
-    alert('Không thể lấy danh sách NXB!');
+    alert(err.response?.data?.message || "Không thể lấy danh sách NXB!");
   } finally {
     loading.value = false;
   }
@@ -60,14 +60,17 @@ const deletePublisher = async (publisher) => {
   if (!confirm(`Bạn có chắc muốn xóa NXB "${publisher.TenNXB}" không?`)) return;
 
   try {
-    const res = await axios.delete(`http://localhost:3000/api/admin/publishers/${publisher.MaNXB}`);
-    publishers.value = publishers.value.filter(p => p.MaNXB !== publisher.MaNXB);
+
+    const id = Number(publisher.MaNXB);
+    const res = await PublisherService.delete(id); 
+    publishers.value = publishers.value.filter(p => p.MaNXB !== id);
     alert(res.data.message || "Xóa thành công!");
   } catch (err) {
     console.error(err);
-    alert("Xóa thất bại!");
+    alert(err.response?.data?.message || "Xóa thất bại!");
   }
 };
+
 
 onMounted(fetchPublishers);
 </script>
@@ -138,7 +141,6 @@ tr:hover {
   background-color: #42a5f5;
   color: white;
 }
-
 .btn.add:hover {
   background-color: #1e88e5;
   transform: translateY(-2px);
@@ -149,7 +151,6 @@ tr:hover {
   color: white;
   margin-right: 6px;
 }
-
 .btn.edit:hover {
   background-color: #1e88e5;
   transform: translateY(-2px);
@@ -159,7 +160,6 @@ tr:hover {
   background-color: #ef5350;
   color: white;
 }
-
 .btn.delete:hover {
   background-color: #c62828;
   transform: translateY(-2px);

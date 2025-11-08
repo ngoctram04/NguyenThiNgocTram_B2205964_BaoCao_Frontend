@@ -26,29 +26,20 @@
           <tr v-for="book in books" :key="book.MaSach">
             <td>{{ book.MaSach }}</td>
             <td>
-              <img
-                v-if="book.HinhAnh"
-                :src="getImageUrl(book.HinhAnh)"
-                alt="Bìa sách"
-                class="book-img"
-              />
+              <img v-if="book.HinhAnh" :src="getImageUrl(book.HinhAnh)" class="book-img" />
               <span v-else class="no-img">Chưa có</span>
             </td>
             <td>{{ book.TenSach }}</td>
             <td>{{ formatPrice(book.DonGia) }}</td>
             <td>{{ book.SoQuyen }}</td>
-            <td>{{ book.NamXuatBan }}</td>
-            <td>{{ book.TacGia }}</td>
+            <td>{{ book.NamXuatBan || "-" }}</td>
+            <td>{{ book.TacGia || "-" }}</td>
             <td>{{ getPublisherName(book.MaNXB) }}</td>
             <td>
-              <button
-                class="btn edit"
-                @click="$router.push('/books/edit/' + book.MaSach)"
-              >Sửa</button>
+              <button class="btn edit" @click="editBook(book)">Sửa</button>
               <button class="btn delete" @click="deleteBook(book)">Xóa</button>
             </td>
           </tr>
-
           <tr v-if="books.length === 0">
             <td colspan="9" class="empty">Chưa có sách nào</td>
           </tr>
@@ -60,145 +51,83 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import axios from "axios";
+import { useRouter } from "vue-router";
+import API from "../../services/api.server.js";
 
 const books = ref([]);
 const publishers = ref([]);
 const loading = ref(true);
+const router = useRouter();
 
+const formatPrice = (price) =>
+  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(price);
 
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(price);
-};
-
-const getImageUrl = (path) => {
-  if (!path) return "";
-  if (path.startsWith("http")) return path;
-  return `http://localhost:3000${path}`;
-};
+const getImageUrl = (path) =>
+  path ? (path.startsWith("http") ? path : `http://localhost:3000${path}`) : "";
 
 const fetchBooks = async () => {
-  const res = await axios.get("http://localhost:3000/api/admin/books");
-  books.value = res.data;
+  try {
+    const res = await API.get("/books");
+    books.value = res.data || [];
+  } catch (err) {
+    console.error(err);
+    alert("Lấy danh sách sách thất bại!");
+  }
 };
 
-
 const fetchPublishers = async () => {
-  const res = await axios.get("http://localhost:3000/api/admin/publishers");
-  publishers.value = res.data;
+  try {
+    const res = await API.get("/publishers");
+    publishers.value = res.data || [];
+  } catch (err) {
+    console.error(err);
+    publishers.value = [];
+  }
 };
 
 const getPublisherName = (maNXB) => {
-  const pub = publishers.value.find(
-    (p) => String(p.MaNXB) === String(maNXB)
-  );
+  const pub = publishers.value.find((p) => String(p._id || p.MaNXB) === String(maNXB));
   return pub ? pub.TenNXB : "Không rõ";
 };
 
-
-
 const deleteBook = async (book) => {
   if (!confirm(`Bạn có chắc muốn xóa sách "${book.TenSach}" không?`)) return;
-
   try {
-    const res = await axios.delete(
-      `http://localhost:3000/api/admin/books/${book.MaSach}`
-    );
+    await API.delete(`/books/${book.MaSach}`);
     books.value = books.value.filter((b) => b.MaSach !== book.MaSach);
-    alert(res.data.message || "Xóa sách thành công!");
+    alert("Xóa sách thành công!");
   } catch (err) {
     console.error(err);
     alert("Xóa sách thất bại!");
   }
 };
 
+const editBook = (book) => {
+  router.push(`/books/edit/${book.MaSach}`);
+};
 
 onMounted(async () => {
-  try {
-    await Promise.all([fetchBooks(), fetchPublishers()]);
-  } catch (err) {
-    console.error(err);
-    alert("Không thể tải dữ liệu!");
-  } finally {
-    loading.value = false;
-  }
+  loading.value = true;
+  await Promise.all([fetchPublishers(), fetchBooks()]);
+  loading.value = false;
 });
 </script>
 
 <style scoped>
-.book-list {
-  background: #f9fafc;
-  padding: 25px;
-  border-radius: 12px;
-}
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-h2 {
-  color: #1976d2;
-}
-.table-container {
-  overflow-x: auto;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 900px;
-}
-th,
-td {
-  padding: 12px 15px;
-  border-bottom: 1px solid #e0e0e0;
-  text-align: left;
-}
-th {
-  background: #e3f2fd;
-  color: #0d47a1;
-  font-weight: 600;
-}
-tr:hover {
-  background: #f1f5f9;
-}
-.book-img {
-  width: 55px;
-  height: 75px;
-  object-fit: cover;
-  border-radius: 6px;
-}
-.no-img {
-  color: #888;
-  font-style: italic;
-}
-.btn {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-.btn.add {
-  background-color: #42a5f5;
-  color: white;
-}
-.btn.edit {
-  background-color: #64b5f6;
-  color: white;
-  margin-right: 6px;
-}
-.btn.delete {
-  background-color: #ef5350;
-  color: white;
-}
-.empty {
-  text-align: center;
-  color: #999;
-  font-style: italic;
-}
+.book-list { background: #f9fafc; padding: 25px; border-radius: 12px; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+h2 { color: #1976d2; }
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 900px; }
+th, td { padding: 12px 15px; border-bottom: 1px solid #e0e0e0; text-align: left; }
+th { background: #e3f2fd; color: #0d47a1; font-weight: 600; }
+tr:hover { background: #f1f5f9; }
+.book-img { width: 55px; height: 75px; object-fit: cover; border-radius: 6px; }
+.no-img { color: #888; font-style: italic; }
+.btn { padding: 6px 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+.btn.add { background-color: #42a5f5; color: white; }
+.btn.edit { background-color: #64b5f6; color: white; margin-right: 6px; }
+.btn.delete { background-color: #ef5350; color: white; }
+.empty { text-align: center; color: #999; font-style: italic; padding: 10px 0; }
+.loading { text-align: center; padding: 20px; font-weight: 500; color: #1976d2; }
 </style>

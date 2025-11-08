@@ -2,12 +2,21 @@
   <form @submit.prevent="submitForm" class="publisher-form">
     <div class="form-group">
       <label>Tên NXB <span class="required">*</span></label>
-      <input v-model="form.TenNXB" type="text" required placeholder="Nhập tên nhà xuất bản" />
+      <input
+        v-model="form.TenNXB"
+        type="text"
+        placeholder="Nhập tên nhà xuất bản"
+        required
+      />
     </div>
 
     <div class="form-group">
       <label>Địa chỉ</label>
-      <input v-model="form.DiaChi" type="text" placeholder="Nhập địa chỉ nhà xuất bản" />
+      <input
+        v-model="form.DiaChi"
+        type="text"
+        placeholder="Nhập địa chỉ nhà xuất bản"
+      />
     </div>
 
     <button type="submit" class="btn submit">{{ submitText }}</button>
@@ -15,24 +24,17 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
-import axios from 'axios';
-import { useRouter } from 'vue-router';
+import { ref, watch } from "vue";
+import { useRouter } from "vue-router";
+import PublisherService from "../services/publisher.service.js";
 
 const props = defineProps({
-  submitUrl: { type: String, required: true },
-  submitMethod: { type: String, default: 'post' },
-  submitText: { type: String, default: 'Gửi' },
+  submitText: { type: String, default: "Gửi" },
   initialData: { type: Object, default: () => ({}) },
 });
 
 const router = useRouter();
-
-const form = ref({
-  MaNXB: '',
-  TenNXB: '',
-  DiaChi: '',
-});
+const form = ref({ MaNXB: null, TenNXB: "", DiaChi: "" });
 
 watch(
   () => props.initialData,
@@ -44,30 +46,33 @@ watch(
   { immediate: true }
 );
 
-
 const submitForm = async () => {
-  if (!form.value.TenNXB) {
+  if (!form.value.TenNXB?.trim()) {
     alert("Tên NXB là bắt buộc!");
     return;
   }
 
   try {
-    const payload = {
-      TenNXB: form.value.TenNXB,
-      DiaChi: form.value.DiaChi || '',
-    };
+    if (form.value.MaNXB) {
 
-    const res = await axios({
-      method: props.submitMethod,
-      url: props.submitUrl,
-      data: payload,
-    });
+      await PublisherService.update(form.value.MaNXB, {
+        TenNXB: form.value.TenNXB.trim(),
+        DiaChi: form.value.DiaChi?.trim() || "",
+      });
+      alert("Cập nhật nhà xuất bản thành công!");
+    } else {
 
-    alert(res.data.message || "Thao tác thành công!");
-    router.push('/publishers');
+      await PublisherService.create({
+        TenNXB: form.value.TenNXB.trim(),
+        DiaChi: form.value.DiaChi?.trim() || "",
+      });
+      alert("Thêm nhà xuất bản thành công!");
+    }
+
+    router.push("/publishers");
   } catch (err) {
-    console.error(err);
-    alert("Thao tác thất bại!");
+    console.error("PublisherForm error:", err);
+    alert(err.response?.data?.message || "Thao tác thất bại!");
   }
 };
 </script>
@@ -79,7 +84,7 @@ const submitForm = async () => {
   border-radius: 12px;
   max-width: 500px;
   margin: 0 auto;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
 }
 
 .form-group {

@@ -1,20 +1,23 @@
 <template>
   <div class="admin-layout">
-    <!-- Sidebar -->
     <aside class="sidebar">
       <h2 class="sidebar-title">Quản lý thư viện</h2>
       <nav>
-        <router-link to="/books" class="nav-item">Quản lý sách</router-link>
-        <router-link to="/publishers" class="nav-item">Quản lý nhà xuất bản</router-link>
-        <router-link to="/readers" class="nav-item">Quản lý độc giả</router-link>
-        <router-link v-if="isAdmin" to="/staffs" class="nav-item">Quản lý nhân viên</router-link>
-        <router-link to="/categories" class="nav-item">Quản lý thể loại</router-link>
-        <router-link to="/dashboard" class="nav-item">Thống kê</router-link>
-        <a @click.prevent="logout" href="#" class="nav-item logout">Đăng xuất</a>
+        <router-link
+          v-for="item in filteredMenu"
+          :key="item.path"
+          :to="item.path"
+          class="nav-item"
+          :class="{ active: isActive(item.path) }"
+        >
+          {{ item.name }}
+        </router-link>
+        <a href="#" class="nav-item logout" @click.prevent="logout">
+          Đăng xuất
+        </a>
       </nav>
     </aside>
 
-    <!-- Main content -->
     <main class="main-content">
       <header class="topbar">
         <h3>{{ pageTitle }}</h3>
@@ -28,45 +31,39 @@
 </template>
 
 <script setup>
-import { computed, reactive } from "vue";
+import { reactive, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
 const router = useRouter();
 const route = useRoute();
-
-// Lấy user từ localStorage
 const user = reactive(JSON.parse(localStorage.getItem("user") || "{}"));
 
-// Kiểm tra admin
-const isAdmin = computed(() => user?.Chucvu === "admin");
+const isAdmin = computed(() => user?.Chucvu?.toLowerCase() === "admin");
 
-// Tiêu đề trang
+const menuItems = [
+  { name: "Thống kê", path: "/dashboard" },
+  { name: "Quản lý sách", path: "/books" },
+  { name: "Quản lý NXB", path: "/publishers" },
+  { name: "Quản lý độc giả", path: "/readers" },
+  { name: "Quản lý nhân viên", path: "/staffs", adminOnly: true },
+  { name: "Quản lý thể loại", path: "/categories" },
+];
+
+const filteredMenu = computed(() =>
+  menuItems.filter((item) => !item.adminOnly || isAdmin.value)
+);
+
 const pageTitle = computed(() => {
-  switch (route.name) {
-    case "BookList":
-    case "BookAdd":
-    case "BookEdit":
-      return "Quản lý sách";
-    case "PublisherList":
-    case "PublisherAdd":
-    case "PublisherEdit":
-      return "Quản lý nhà xuất bản";
-    case "ReaderList":
-      return "Quản lý độc giả";
-    case "StaffList":
-      return "Quản lý nhân viên";
-    case "CategoryList":
-      return "Quản lý thể loại";
-    case "Dashboard":
-      return "Thống kê";
-    default:
-      return "";
-  }
+  const path = route.path;
+  const match = menuItems.find((item) => path.startsWith(item.path));
+  return match ? match.name : "";
 });
 
-// Logout
+const isActive = (path) => route.path.startsWith(path);
+
 const logout = () => {
   localStorage.removeItem("user");
+  localStorage.removeItem("token");
   router.push("/login");
 };
 </script>
@@ -78,11 +75,10 @@ const logout = () => {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Sidebar */
 .sidebar {
   width: 250px;
   background-color: #1976d2;
-  padding: 25px 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   box-shadow: 3px 0 8px rgba(0,0,0,0.1);
@@ -91,10 +87,10 @@ const logout = () => {
 }
 
 .sidebar-title {
-  margin-bottom: 30px;
+  color: white;
   font-size: 20px;
   font-weight: 600;
-  color: white;
+  margin-bottom: 30px;
 }
 
 .nav-item {
@@ -102,16 +98,18 @@ const logout = () => {
   padding: 12px 18px;
   color: white;
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: 8px;
   margin-bottom: 12px;
   font-weight: 500;
-  transition: background 0.3s, transform 0.2s;
+  transition: all 0.2s;
 }
 
-.nav-item:hover,
-.router-link-active {
+.nav-item.active {
   background-color: #115293;
-  transform: translateX(4px);
+}
+
+.nav-item:hover {
+  background-color: #115293;
 }
 
 .nav-item.logout {
@@ -124,7 +122,6 @@ const logout = () => {
   background-color: #9a0007;
 }
 
-/* Main content */
 .main-content {
   flex: 1;
   display: flex;
@@ -137,7 +134,7 @@ const logout = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
   font-weight: 500;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
