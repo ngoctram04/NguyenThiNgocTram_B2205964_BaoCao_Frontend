@@ -23,7 +23,7 @@ const DashboardService = {
 
   async getTotalStaffs() {
     try {
-      const res = await API.get("/staffs/count"); // chỉ lấy count
+      const res = await API.get("/staffs/count"); // giữ nguyên nếu backend đã có
       return res.data.count || 0;
     } catch (err) {
       console.error("Lỗi getTotalStaffs:", err);
@@ -31,10 +31,15 @@ const DashboardService = {
     }
   },
 
+  // --- Cập nhật lấy tổng độc giả
   async getTotalReaders() {
     try {
-      const res = await API.get("/readers/count"); // chỉ lấy count
-      return res.data.count || 0;
+      // Lấy toàn bộ độc giả từ API hiện tại
+      const res = await API.get("/readers");
+      if (Array.isArray(res.data)) {
+        return res.data.length; // đếm số lượng độc giả
+      }
+      return 0;
     } catch (err) {
       console.error("Lỗi getTotalReaders:", err);
       return 0;

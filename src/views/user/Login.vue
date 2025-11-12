@@ -1,12 +1,14 @@
 <template>
-  <div class="auth-form">
+  <div class="user-form">
     <h2>Đăng nhập</h2>
-    <form @submit.prevent="handleLogin">
-      <input v-model="username" placeholder="Tên đăng nhập" required />
+    <form @submit.prevent="onLogin">
+      <input v-model="email" type="email" placeholder="Email" required />
       <input v-model="password" type="password" placeholder="Mật khẩu" required />
-      <button type="submit" :disabled="loading">{{ loading ? 'Đang đăng nhập...' : 'Đăng nhập' }}</button>
+      <button type="submit">Đăng nhập</button>
     </form>
-    <p>Bạn chưa có tài khoản? <router-link to="/user/register">Đăng ký</router-link></p>
+
+    <p v-if="message" :class="{'error': isError, 'success': !isError}">{{ message }}</p>
+    <router-link to="/user/register">Chưa có tài khoản? Đăng ký</router-link>
   </div>
 </template>
 
@@ -15,29 +17,75 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { loginReader } from "../../services/readerAuth.service.js";
 
-const username = ref("");
+const email = ref("");
 const password = ref("");
-const loading = ref(false);
+const message = ref("");
+const isError = ref(false);
 const router = useRouter();
 
-const handleLogin = async () => {
-  loading.value = true;
+const onLogin = async () => {
+  isError.value = false;
+  message.value = "";
+
   try {
-    await loginReader({ username: username.value, password: password.value });
-    alert("Đăng nhập thành công!");
-    router.push("/user");
+    const res = await loginReader({
+      Email: email.value,   // PascalCase để match backend
+      Password: password.value
+    });
+
+    if (res?.token) {
+      window.dispatchEvent(new Event("login-success"));
+      message.value = "Đăng nhập thành công!";
+      isError.value = false;
+      router.push("/user");
+    } else {
+      message.value = "Đăng nhập thất bại!";
+      isError.value = true;
+    }
   } catch (err) {
-    console.error(err);
-    alert(err.response?.data?.message || "Đăng nhập thất bại!");
-  } finally {
-    loading.value = false;
+    message.value = err.response?.data?.message || "Đăng nhập thất bại!";
+    isError.value = true;
   }
 };
 </script>
 
 <style scoped>
-.auth-form { max-width: 400px; margin: 50px auto; display: flex; flex-direction: column; gap: 10px; }
-.auth-form input { padding: 10px; font-size: 1rem; border-radius: 6px; border: 1px solid #ccc; }
-.auth-form button { padding: 10px; font-size: 1rem; border: none; border-radius: 6px; background-color: #1976d2; color: white; cursor: pointer; }
-.auth-form button:disabled { background-color: #888; cursor: not-allowed; }
+.user-form {
+  max-width: 400px;
+  margin: 3rem auto;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f5f6fa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+input {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+button {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 4px;
+  background: #4a90e2;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #357ABD;
+}
+
+p.error {
+  color: red;
+}
+
+p.success {
+  color: green;
+}
 </style>

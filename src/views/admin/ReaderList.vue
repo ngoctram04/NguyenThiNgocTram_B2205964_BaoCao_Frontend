@@ -24,9 +24,9 @@
             <td>{{ r.MaDocGia }}</td>
             <td>{{ r.HoLot }}</td>
             <td>{{ r.Ten }}</td>
-            <td>{{ r.NgaySinh }}</td>
+            <td>{{ formatDate(r.NgaySinh) }}</td>
             <td>{{ r.Phai }}</td>
-            <td>{{ r.DiaChi }}</td>
+            <td>{{ r.DiaCHi }}</td>
             <td>{{ r.DienThoai }}</td>
           </tr>
           <tr v-if="readers.length === 0">
@@ -45,12 +45,20 @@ import { getReaders } from "@/services/reader.service.js";
 const readers = ref([]);
 const loading = ref(true);
 
+// Chuyển ngày sinh thành định dạng dd/mm/yyyy
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("vi-VN");
+};
+
 const fetchReaders = async () => {
   loading.value = true;
   try {
-    readers.value = await getReaders();
+    readers.value = await getReaders(); // phải là mảng
+    console.log("Danh sách độc giả:", readers.value);
   } catch (err) {
-    alert(err.message || "Không tải được danh sách độc giả");
+    alert(err.response?.data?.message || "Không tải được danh sách độc giả");
   } finally {
     loading.value = false;
   }
