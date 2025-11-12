@@ -1,5 +1,6 @@
 <template>
   <div class="admin-layout">
+    <!-- Sidebar -->
     <aside class="sidebar">
       <h2 class="sidebar-title">Quản lý thư viện</h2>
       <nav>
@@ -18,6 +19,7 @@
       </nav>
     </aside>
 
+    <!-- Main content -->
     <main class="main-content">
       <header class="topbar">
         <h3>{{ pageTitle }}</h3>
@@ -36,31 +38,37 @@ import { useRouter, useRoute } from "vue-router";
 
 const router = useRouter();
 const route = useRoute();
-const user = reactive(JSON.parse(localStorage.getItem("user") || "{}"));
 
+// Lấy thông tin admin hiện tại
+const user = reactive(JSON.parse(localStorage.getItem("user") || "{}"));
 const isAdmin = computed(() => user?.Chucvu?.toLowerCase() === "admin");
 
+// Menu items
 const menuItems = [
   { name: "Thống kê", path: "/dashboard" },
   { name: "Quản lý sách", path: "/books" },
   { name: "Quản lý NXB", path: "/publishers" },
-  { name: "Quản lý độc giả", path: "/readers" },
+  { name: "Quản lý độc giả", path: "/readers" }, // <-- đổi từ /user -> /reader
   { name: "Quản lý nhân viên", path: "/staffs", adminOnly: true },
   { name: "Quản lý thể loại", path: "/categories" },
 ];
 
+// Lọc menu theo quyền admin
 const filteredMenu = computed(() =>
   menuItems.filter((item) => !item.adminOnly || isAdmin.value)
 );
 
+// Lấy tên trang hiện tại
 const pageTitle = computed(() => {
   const path = route.path;
   const match = menuItems.find((item) => path.startsWith(item.path));
   return match ? match.name : "";
 });
 
+// Kiểm tra menu item đang active
 const isActive = (path) => route.path.startsWith(path);
 
+// Logout
 const logout = () => {
   localStorage.removeItem("user");
   localStorage.removeItem("token");
@@ -75,6 +83,7 @@ const logout = () => {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Sidebar */
 .sidebar {
   width: 250px;
   background-color: #1976d2;
@@ -122,6 +131,7 @@ const logout = () => {
   background-color: #9a0007;
 }
 
+/* Main content */
 .main-content {
   flex: 1;
   display: flex;

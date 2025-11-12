@@ -1,7 +1,12 @@
 <template>
   <div class="reader-list">
-    <h2>Danh sách độc giả</h2>
-    <div class="table-container">
+    <div class="header">
+      <h2>Danh sách độc giả</h2>
+    </div>
+
+    <div v-if="loading" class="loading">Đang tải dữ liệu...</div>
+
+    <div v-else class="table-container">
       <table>
         <thead>
           <tr>
@@ -15,14 +20,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="reader in readers" :key="reader.MaDocGia">
-            <td>{{ reader.MaDocGia }}</td>
-            <td>{{ reader.HoLot }}</td>
-            <td>{{ reader.Ten }}</td>
-            <td>{{ reader.NgaySinh }}</td>
-            <td>{{ reader.Phai }}</td>
-            <td>{{ reader.DiaChi }}</td>
-            <td>{{ reader.DienThoai }}</td>
+          <tr v-for="r in readers" :key="r.MaDocGia">
+            <td>{{ r.MaDocGia }}</td>
+            <td>{{ r.HoLot }}</td>
+            <td>{{ r.Ten }}</td>
+            <td>{{ r.NgaySinh }}</td>
+            <td>{{ r.Phai }}</td>
+            <td>{{ r.DiaChi }}</td>
+            <td>{{ r.DienThoai }}</td>
           </tr>
           <tr v-if="readers.length === 0">
             <td colspan="7" class="empty">Chưa có độc giả nào</td>
@@ -35,16 +40,19 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import axios from "axios";
+import { getReaders } from "@/services/reader.service.js";
 
 const readers = ref([]);
+const loading = ref(true);
 
 const fetchReaders = async () => {
+  loading.value = true;
   try {
-    const res = await axios.get("http://localhost:3000/api/readers");
-    readers.value = res.data;
+    readers.value = await getReaders();
   } catch (err) {
-    console.error(err);
+    alert(err.message || "Không tải được danh sách độc giả");
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -56,13 +64,19 @@ onMounted(fetchReaders);
   background: #f9fafc;
   padding: 25px;
   border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 h2 {
-  margin-bottom: 20px;
-  font-weight: 600;
   color: #1976d2;
+  font-weight: 600;
 }
 
 .table-container {
@@ -72,13 +86,14 @@ h2 {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 700px;
+  min-width: 800px;
 }
 
 th, td {
   padding: 12px 15px;
-  text-align: left;
   border-bottom: 1px solid #e0e0e0;
+  text-align: left;
+  font-size: 15px;
 }
 
 th {
@@ -95,5 +110,11 @@ tr:hover {
   text-align: center;
   color: #999;
   font-style: italic;
+  padding: 20px;
+}
+
+.loading {
+  text-align: center;
+  color: #555;
 }
 </style>
