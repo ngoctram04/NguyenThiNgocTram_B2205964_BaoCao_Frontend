@@ -1,7 +1,19 @@
 <template>
   <div class="staff-list">
     <div class="header">
-      <h2>Danh sách nhân viên</h2>
+      <div class="search-filter">
+        <input
+          v-model="searchText"
+          placeholder="Tìm nhân viên..."
+          class="search-input"
+        />
+
+        <select v-model="filterPosition" class="filter-select">
+          <option value="">-- Chức vụ --</option>
+          <option v-for="pos in positions" :key="pos" :value="pos">{{ pos }}</option>
+        </select>
+      </div>
+
       <button class="btn add" @click="$router.push('/staffs/add')">
         + Thêm nhân viên
       </button>
@@ -23,7 +35,7 @@
         </thead>
 
         <tbody>
-          <tr v-for="staff in staffs" :key="staff.MSNV">
+          <tr v-for="staff in filteredStaffs" :key="staff.MSNV">
             <td>{{ staff.MSNV }}</td>
             <td>{{ staff.HoTenNV }}</td>
             <td>{{ staff.Chucvu || "-" }}</td>
@@ -42,8 +54,8 @@
             </td>
           </tr>
 
-          <tr v-if="staffs.length === 0">
-            <td colspan="6" class="empty">Chưa có nhân viên nào</td>
+          <tr v-if="filteredStaffs.length === 0">
+            <td colspan="6" class="empty">Không tìm thấy nhân viên</td>
           </tr>
         </tbody>
       </table>
@@ -52,16 +64,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { getStaffs, deleteStaff as deleteStaffService } from "@/services/staff.service.js";
 
 const staffs = ref([]);
 const loading = ref(true);
+const searchText = ref("");
+const filterPosition = ref("");
+
+const positions = ref([]);
 
 const fetchStaffs = async () => {
   loading.value = true;
   try {
     staffs.value = await getStaffs();
+    positions.value = Array.from(
+      new Set(staffs.value.map(s => s.Chucvu).filter(Boolean))
+    );
   } catch (err) {
     console.error(err);
     alert(err.message || "Không tải được danh sách nhân viên!");
@@ -82,6 +101,14 @@ const deleteStaff = async (msnv) => {
   }
 };
 
+const filteredStaffs = computed(() =>
+  staffs.value.filter(s => {
+    const searchMatch = s.HoTenNV.toLowerCase().includes(searchText.value.toLowerCase());
+    const positionMatch = filterPosition.value ? s.Chucvu === filterPosition.value : true;
+    return searchMatch && positionMatch;
+  })
+);
+
 onMounted(fetchStaffs);
 </script>
 
@@ -98,6 +125,24 @@ onMounted(fetchStaffs);
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.search-filter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-input, .filter-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  width: 150px;
+}
+
+.filter-select {
+  width: 130px;
 }
 
 h2 {
@@ -169,6 +214,7 @@ tr:hover {
 
 .btn.delete:hover {
   background-color: #e53935;
+  transform: translateY(-2px);
 }
 
 .empty {

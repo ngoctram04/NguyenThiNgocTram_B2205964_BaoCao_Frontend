@@ -1,16 +1,6 @@
 import API from "./api.server.js";
 
-const getToken = () => {
-  const userStr = localStorage.getItem("user");
-  if (!userStr) return "";
-  try {
-    const user = JSON.parse(userStr);
-    return user.token || "";
-  } catch (err) {
-    console.error("Error parsing user token:", err);
-    return "";
-  }
-};
+const getToken = () => localStorage.getItem("token") || "";
 
 const authHeaders = () => ({
   headers: {
@@ -28,10 +18,6 @@ export const getStaffs = async () => {
   }
 };
 
-/**
- * Tạo nhân viên mới (chỉ admin)
- * @param {Object} data { MSNV, HoTenNV, Password, Chucvu, Diachi, SoDienThoai }
- */
 export const createStaff = async (data) => {
   if (!data.MSNV || !data.HoTenNV || !data.Password || !data.Chucvu) {
     throw { message: "MSNV, Họ tên, Mật khẩu và Chức vụ là bắt buộc" };
@@ -46,11 +32,6 @@ export const createStaff = async (data) => {
   }
 };
 
-/**
- * Cập nhật nhân viên (chỉ admin)
- * @param {string} id
- * @param {Object} data
- */
 export const updateStaff = async (id, data) => {
   if (!id) throw { message: "ID nhân viên không được để trống" };
 
@@ -63,10 +44,6 @@ export const updateStaff = async (id, data) => {
   }
 };
 
-/**
- * Xóa nhân viên (chỉ admin)
- * @param {string} id
- */
 export const deleteStaff = async (id) => {
   if (!id) throw { message: "ID nhân viên không được để trống" };
   if (id === "AD001") throw { message: "Không được xóa admin mặc định" };

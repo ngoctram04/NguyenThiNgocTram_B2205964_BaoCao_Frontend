@@ -1,7 +1,13 @@
 <template>
   <div class="publisher-list">
     <div class="header">
-      <h2>Danh sách nhà xuất bản</h2>
+      <div class="search-filter">
+        <input
+          v-model="searchText"
+          placeholder="Tìm NXB..."
+          class="search-input"
+        />
+      </div>
       <button class="btn add" @click="$router.push('/publishers/add')">+ Thêm NXB</button>
     </div>
 
@@ -18,7 +24,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="publisher in publishers" :key="publisher.MaNXB">
+          <tr v-for="publisher in filteredPublishers" :key="publisher.MaNXB">
             <td>{{ publisher.MaNXB }}</td>
             <td>{{ publisher.TenNXB }}</td>
             <td>{{ publisher.DiaChi || '-' }}</td>
@@ -27,8 +33,8 @@
               <button class="btn delete" @click="deletePublisher(publisher)">Xóa</button>
             </td>
           </tr>
-          <tr v-if="publishers.length === 0">
-            <td colspan="4" class="empty">Chưa có nhà xuất bản nào</td>
+          <tr v-if="filteredPublishers.length === 0">
+            <td colspan="4" class="empty">Không tìm thấy NXB nào</td>
           </tr>
         </tbody>
       </table>
@@ -37,17 +43,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import PublisherService from "../../services/publisher.service.js";
 
 const publishers = ref([]);
 const loading = ref(true);
+const searchText = ref("");
 
 const fetchPublishers = async () => {
   loading.value = true;
   try {
     const res = await PublisherService.getAll();
-    publishers.value = res.data;
+    publishers.value = res.data || [];
   } catch (err) {
     console.error(err);
     alert(err.response?.data?.message || "Không thể lấy danh sách NXB!");
@@ -60,9 +67,8 @@ const deletePublisher = async (publisher) => {
   if (!confirm(`Bạn có chắc muốn xóa NXB "${publisher.TenNXB}" không?`)) return;
 
   try {
-
     const id = Number(publisher.MaNXB);
-    const res = await PublisherService.delete(id); 
+    const res = await PublisherService.delete(id);
     publishers.value = publishers.value.filter(p => p.MaNXB !== id);
     alert(res.data.message || "Xóa thành công!");
   } catch (err) {
@@ -71,6 +77,11 @@ const deletePublisher = async (publisher) => {
   }
 };
 
+const filteredPublishers = computed(() => {
+  return publishers.value.filter(p =>
+    p.TenNXB.toLowerCase().includes(searchText.value.toLowerCase())
+  );
+});
 
 onMounted(fetchPublishers);
 </script>
@@ -88,6 +99,20 @@ onMounted(fetchPublishers);
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.search-filter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  width: 180px;
 }
 
 h2 {

@@ -40,8 +40,8 @@
       </div>
 
       <div class="btn-container">
-        <button type="submit" class="btn save">💾 Lưu thay đổi</button>
-        <button type="button" class="btn cancel" @click="$router.push('/staffs')">❌ Hủy</button>
+        <button type="submit" class="btn save">Lưu thay đổi</button>
+        <button type="button" class="btn cancel" @click="$router.push('/staffs')">Hủy</button>
       </div>
     </form>
   </div>
@@ -50,7 +50,7 @@
 <script setup>
 import { reactive, ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { updateStaff, getStaffs } from "../../services/staff.service.js"; // service
+import { updateStaff, getStaffs } from "../../services/staff.service.js";
 
 const route = useRoute();
 const router = useRouter();

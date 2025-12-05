@@ -1,7 +1,20 @@
 <template>
   <div class="reader-list">
     <div class="header">
-      <h2>Danh sách độc giả</h2>
+      <div class="search-filter">
+        <input
+          v-model="searchText"
+          placeholder="Tìm độc giả..."
+          class="search-input"
+        />
+
+        <select v-model="filterGender" class="filter-select">
+          <option value="">-- Chọn phái --</option>
+          <option value="Nam">Nam</option>
+          <option value="Nữ">Nữ</option>
+          <option value="Khác">Khác</option>
+        </select>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">Đang tải dữ liệu...</div>
@@ -20,17 +33,17 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in readers" :key="r.MaDocGia">
+          <tr v-for="r in filteredReaders" :key="r.MaDocGia">
             <td>{{ r.MaDocGia }}</td>
             <td>{{ r.HoLot }}</td>
             <td>{{ r.Ten }}</td>
             <td>{{ formatDate(r.NgaySinh) }}</td>
             <td>{{ r.Phai }}</td>
-            <td>{{ r.DiaCHi }}</td>
-            <td>{{ r.DienThoai }}</td>
+            <td>{{ r.DiaCHi || "-" }}</td>
+            <td>{{ r.DienThoai || "-" }}</td>
           </tr>
-          <tr v-if="readers.length === 0">
-            <td colspan="7" class="empty">Chưa có độc giả nào</td>
+          <tr v-if="filteredReaders.length === 0">
+            <td colspan="7" class="empty">Không tìm thấy độc giả nào</td>
           </tr>
         </tbody>
       </table>
@@ -39,13 +52,16 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { getReaders } from "@/services/reader.service.js";
 
 const readers = ref([]);
 const loading = ref(true);
 
-// Chuyển ngày sinh thành định dạng dd/mm/yyyy
+const searchText = ref("");
+const filterGender = ref("");
+const filterAddress = ref("");
+
 const formatDate = (dateStr) => {
   if (!dateStr) return "";
   const d = new Date(dateStr);
@@ -55,14 +71,32 @@ const formatDate = (dateStr) => {
 const fetchReaders = async () => {
   loading.value = true;
   try {
-    readers.value = await getReaders(); // phải là mảng
-    console.log("Danh sách độc giả:", readers.value);
+    readers.value = await getReaders();
   } catch (err) {
     alert(err.response?.data?.message || "Không tải được danh sách độc giả");
   } finally {
     loading.value = false;
   }
 };
+
+const filteredReaders = computed(() =>
+  readers.value.filter(r => {
+    const searchMatch =
+      String(r.MaDocGia).toLowerCase().includes(searchText.value.toLowerCase()) ||
+      (r.Ten || "").toLowerCase().includes(searchText.value.toLowerCase()) ||
+      (r.HoLot || "").toLowerCase().includes(searchText.value.toLowerCase());
+
+    const genderMatch = filterGender.value
+      ? r.Phai === filterGender.value
+      : true;
+
+    const addressMatch = filterAddress.value
+      ? (r.DiaChi || "").toLowerCase().includes(filterAddress.value.toLowerCase())
+      : true;
+
+    return searchMatch && genderMatch && addressMatch;
+  })
+);
 
 onMounted(fetchReaders);
 </script>
@@ -77,9 +111,27 @@ onMounted(fetchReaders);
 
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 20px;
+}
+
+.search-filter {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.search-input, .filter-select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+  width: 150px;
+}
+
+.filter-select {
+  width: 130px;
 }
 
 h2 {

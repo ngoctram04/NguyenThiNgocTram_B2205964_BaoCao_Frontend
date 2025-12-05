@@ -1,14 +1,16 @@
 <template>
-  <div class="login">
-    <h2>Đăng nhập</h2>
-    <form @submit.prevent="submitLogin">
-      <input v-model="MSNV" placeholder="MSNV" required @input="clearError" />
-      <input v-model="Password" type="password" placeholder="Mật khẩu" required @input="clearError" />
-      <button type="submit" :disabled="loading">
-        {{ loading ? "Đang đăng nhập..." : "Đăng nhập" }}
-      </button>
-    </form>
-    <p v-if="error" class="error">{{ error }}</p>
+  <div class="login-container">
+    <div class="login-card">
+      <h2>Đăng nhập</h2>
+      <form @submit.prevent="submitLogin">
+        <input v-model="MSNV" placeholder="MSNV" required @input="clearError" />
+        <input v-model="Password" type="password" placeholder="Mật khẩu" required @input="clearError" />
+        <button type="submit" :disabled="loading">
+          {{ loading ? "Đang đăng nhập..." : "Đăng nhập" }}
+        </button>
+      </form>
+      <p v-if="error" class="error">{{ error }}</p>
+    </div>
   </div>
 </template>
 
@@ -31,7 +33,6 @@ const clearError = () => {
 const submitLogin = async () => {
   loading.value = true;
   try {
-
     const res = await login(MSNV.value, Password.value);
 
     localStorage.setItem("token", res.token);
@@ -50,46 +51,60 @@ const submitLogin = async () => {
 </script>
 
 <style scoped>
-.login {
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-card {
   width: 320px;
-  margin: 100px auto;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 12px;
   display: flex;
   flex-direction: column;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  gap: 1.2rem;
 }
 
 h2 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
+  font-size: 1.6rem;
+  color: #1e3a8a;
 }
 
 input {
-  margin-bottom: 12px;
-  padding: 10px;
-  font-size: 14px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  padding: 0.7rem 0.9rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  outline: none;
   transition: border-color 0.2s;
+  margin-bottom: 0.5rem;
 }
 
 input:focus {
   border-color: #1976d2;
-  outline: none;
 }
 
 button {
-  padding: 10px;
-  font-size: 14px;
+  padding: 0.7rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
   background-color: #1976d2;
   color: white;
-  border: none;
-  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
 button:hover:enabled {
   background-color: #115293;
+  transform: translateY(-1px);
 }
 
 button:disabled {
@@ -98,9 +113,17 @@ button:disabled {
 }
 
 .error {
-  margin-top: 10px;
   color: #d32f2f;
   text-align: center;
-  font-size: 13px;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    width: 100%;
+    padding: 1.5rem;
+  }
 }
 </style>
+

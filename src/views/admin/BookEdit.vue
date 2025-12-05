@@ -5,9 +5,10 @@
     <div v-else-if="!book" class="loading">Không tìm thấy sách</div>
     <BookForm
       v-else
-      :key="book.MaSach"
+      :key="book.MaSach + publishers.length + categories.length"
       :initial-data="book"
       :publishers="publishers"
+      :categories="categories"
       :submit-url="`/books/${book.MaSach}`"
       submit-method="put"
       submit-text="Cập nhật sách"
@@ -27,6 +28,7 @@ const router = useRouter();
 
 const book = ref(null);
 const publishers = ref([]);
+const categories = ref([]);
 const loading = ref(true);
 
 const fetchBook = async () => {
@@ -38,7 +40,6 @@ const fetchBook = async () => {
     book.value = null;
   }
 };
-
 const fetchPublishers = async () => {
   try {
     const res = await API.get("/publishers");
@@ -49,13 +50,24 @@ const fetchPublishers = async () => {
   }
 };
 
+const fetchCategories = async () => {
+  try {
+    const res = await API.get("/categories");
+    categories.value = res.data || [];
+  } catch (err) {
+    console.error("fetchCategories error:", err);
+    categories.value = [];
+  }
+};
+
 const onUpdateSuccess = () => {
   alert("Cập nhật sách thành công!");
   router.push("/books"); 
 };
+
 onMounted(async () => {
   loading.value = true;
-  await Promise.all([fetchBook(), fetchPublishers()]);
+  await Promise.all([fetchBook(), fetchPublishers(), fetchCategories()]);
   loading.value = false;
 });
 </script>

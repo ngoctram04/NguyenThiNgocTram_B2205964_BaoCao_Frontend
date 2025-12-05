@@ -36,6 +36,16 @@
     </div>
 
     <div class="form-group">
+      <label>Thể loại</label>
+      <select v-model="book.MaTL">
+        <option value="">-- Chọn thể loại --</option>
+        <option v-for="cat in categories" :key="cat._id" :value="cat._id">
+          {{ cat.TenTL }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
       <label>Hình ảnh</label>
       <input type="file" @change="onFileChange" accept="image/*" />
       <div v-if="preview" class="preview">
@@ -55,6 +65,7 @@ import { useRouter } from "vue-router";
 const props = defineProps({
   initialData: { type: Object, default: () => ({}) },
   publishers: { type: Array, default: () => [] },
+  categories: { type: Array, default: () => [] }, 
   submitUrl: { type: String, required: true },
   submitMethod: { type: String, default: "post" },
   submitText: { type: String, default: "Lưu" },
@@ -68,6 +79,7 @@ const book = ref({
   NamXuatBan: new Date().getFullYear(),
   TacGia: "",
   MaNXB: "",
+  MaTL: "",
   HinhAnh: "",
   ...props.initialData,
 });
@@ -111,6 +123,7 @@ const onSubmit = async () => {
     formData.append("NamXuatBan", book.value.NamXuatBan ? book.value.NamXuatBan.toString() : "");
     formData.append("TacGia", book.value.TacGia || "");
     formData.append("MaNXB", book.value.MaNXB || "");
+    formData.append("MaTL", book.value.MaTL || "");
 
     if (selectedFile) {
       formData.append("HinhAnh", selectedFile);

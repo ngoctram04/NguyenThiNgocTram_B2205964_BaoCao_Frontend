@@ -2,17 +2,18 @@
   <div class="book-add">
     <h2>Thêm sách mới</h2>
 
-    <div v-if="loading" class="loading">Đang tải danh sách NXB...</div>
+    <div v-if="loading" class="loading">Đang tải danh sách NXB và thể loại...</div>
 
     <div v-else-if="publishers.length === 0" class="loading">
       Không có NXB.
-      <button class="btn-retry" @click="fetchPublishers">Thử lại</button>
+      <button class="btn-retry" @click="fetchData">Thử lại</button>
     </div>
 
     <BookForm
       v-else
-      :key="publishers.length"
+      :key="publishers.length + categories.length"
       :publishers="publishers"
+      :categories="categories"
       submit-url="/books"
       submit-method="post"
       submit-text="Thêm sách"
@@ -26,23 +27,38 @@ import API from "../../services/api.server.js";
 import BookForm from "../../components/BookForm.vue";
 
 const publishers = ref([]);
+const categories = ref([]);
 const loading = ref(true);
 
 const fetchPublishers = async () => {
-  loading.value = true;
   try {
     const res = await API.get("/publishers");
     publishers.value = res.data || [];
   } catch (err) {
-    console.error(err);
+    console.error("fetchPublishers error:", err);
     publishers.value = [];
     alert("Không thể tải danh sách NXB!");
-  } finally {
-    loading.value = false;
   }
 };
 
-onMounted(fetchPublishers);
+const fetchCategories = async () => {
+  try {
+    const res = await API.get("/categories");
+    categories.value = res.data || [];
+  } catch (err) {
+    console.error("fetchCategories error:", err);
+    categories.value = [];
+    alert("Không thể tải danh sách thể loại!");
+  }
+};
+
+const fetchData = async () => {
+  loading.value = true;
+  await Promise.all([fetchPublishers(), fetchCategories()]);
+  loading.value = false;
+};
+
+onMounted(fetchData);
 </script>
 
 <style scoped>
