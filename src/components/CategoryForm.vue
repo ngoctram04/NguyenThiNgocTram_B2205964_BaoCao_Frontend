@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="handleSubmit" class="category-form">
-    <div class="form-group">
+    <div class="form-row">
       <label for="TenTL">Tên thể loại <span class="required">*</span></label>
       <input
         type="text"
@@ -11,7 +11,7 @@
       />
     </div>
 
-    <div class="form-group">
+    <div class="form-row">
       <label for="MoTa">Mô tả</label>
       <textarea
         id="MoTa"
@@ -25,17 +25,13 @@
 </template>
 
 <script setup>
-import { reactive, toRefs, watch } from "vue";
-import { useRouter } from "vue-router";
+import { reactive, watch } from "vue";
 
 const props = defineProps({
   category: { type: Object, default: () => ({}) },
   submitText: { type: String, default: "Lưu" },
 });
-
 const emits = defineEmits(["submit"]);
-
-const router = useRouter();
 
 const form = reactive({
   TenTL: props.category.TenTL || "",
@@ -57,47 +53,65 @@ const handleSubmit = () => {
 
 <style scoped>
 .category-form {
-  max-width: 500px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  max-width: 600px;
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
 }
 
-.form-group {
-  margin-bottom: 15px;
+.form-row {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  margin-bottom: 18px;
 }
 
-label {
+.form-row label {
+  width: 150px;
   font-weight: 600;
-  margin-bottom: 5px;
+  font-size: 15px;
 }
 
-input, textarea {
-  padding: 8px 12px;
+.form-row input,
+.form-row textarea {
+  flex: 1;
+  padding: 10px 12px;
   font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #f9fafb;
+  transition: 0.2s;
+}
+
+.form-row input:focus,
+.form-row textarea:focus {
+  border-color: #1a73e8;
+  background: #fff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
 }
 
 textarea {
+  min-height: 90px;
   resize: vertical;
-  min-height: 80px;
 }
 
 .required {
-  color: red;
+  color: #e53935;
 }
 
 .btn-primary {
+  width: 100%;
   background: #1a73e8;
   color: white;
-  padding: 10px 18px;
+  padding: 12px 15px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: 0.2s;
 }
 
 .btn-primary:hover {

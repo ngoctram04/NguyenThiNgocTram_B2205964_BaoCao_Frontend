@@ -5,44 +5,49 @@
       <input v-model="book.TenSach" placeholder="Nhập tên sách" required />
     </div>
 
-    <div class="form-group">
-      <label>Giá *</label>
-      <input type="number" v-model.number="book.DonGia" min="0" required />
+    <div class="row">
+      <div class="form-group col">
+        <label>Giá *</label>
+        <input type="number" v-model.number="book.DonGia" min="0" required />
+      </div>
+
+      <div class="form-group col">
+        <label>Số quyển *</label>
+        <input type="number" v-model.number="book.SoQuyen" min="0" required />
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col">
+        <label>Năm xuất bản</label>
+        <input type="number" v-model.number="book.NamXuatBan" min="1900" />
+      </div>
+
+      <div class="form-group col">
+        <label>Tác giả / Nguồn gốc</label>
+        <input v-model="book.TacGia" placeholder="Nhập tác giả" />
+      </div>
     </div>
 
-    <div class="form-group">
-      <label>Số quyển *</label>
-      <input type="number" v-model.number="book.SoQuyen" min="0" required />
-    </div>
+    <div class="row">
+      <div class="form-group col">
+        <label>Nhà xuất bản *</label>
+        <select v-model="book.MaNXB" required>
+          <option value="">-- Chọn NXB --</option>
+          <option v-for="nxb in publishers" :key="nxb._id" :value="nxb._id">
+            {{ nxb.TenNXB }}
+          </option>
+        </select>
+      </div>
 
-    <div class="form-group">
-      <label>Năm xuất bản</label>
-      <input type="number" v-model.number="book.NamXuatBan" min="1900" />
-    </div>
-
-    <div class="form-group">
-      <label>Tác giả / Nguồn gốc</label>
-      <input v-model="book.TacGia" placeholder="Nhập tác giả" />
-    </div>
-
-    <div class="form-group">
-      <label>Nhà xuất bản *</label>
-      <select v-model="book.MaNXB" required>
-        <option value="">-- Chọn NXB --</option>
-        <option v-for="nxb in publishers" :key="nxb._id" :value="nxb._id">
-          {{ nxb.TenNXB }}
-        </option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Thể loại</label>
-      <select v-model="book.MaTL">
-        <option value="">-- Chọn thể loại --</option>
-        <option v-for="cat in categories" :key="cat._id" :value="cat._id">
-          {{ cat.TenTL }}
-        </option>
-      </select>
+      <div class="form-group col">
+        <label>Thể loại</label>
+        <select v-model="book.MaTL">
+          <option value="">-- Chọn thể loại --</option>
+          <option v-for="cat in categories" :key="cat._id" :value="cat._id">
+            {{ cat.TenTL }}
+          </option>
+        </select>
+      </div>
     </div>
 
     <div class="form-group">
@@ -65,13 +70,14 @@ import { useRouter } from "vue-router";
 const props = defineProps({
   initialData: { type: Object, default: () => ({}) },
   publishers: { type: Array, default: () => [] },
-  categories: { type: Array, default: () => [] }, 
+  categories: { type: Array, default: () => [] },
   submitUrl: { type: String, required: true },
   submitMethod: { type: String, default: "post" },
   submitText: { type: String, default: "Lưu" },
 });
 
 const router = useRouter();
+
 const book = ref({
   TenSach: "",
   DonGia: 0,
@@ -105,7 +111,8 @@ watch(
   { deep: true }
 );
 
-const getImageUrl = (path) => (path ? (path.startsWith("http") ? path : `http://localhost:3000${path}`) : "");
+const getImageUrl = (path) =>
+  path ? (path.startsWith("http") ? path : `http://localhost:3000${path}`) : "";
 
 const onFileChange = (e) => {
   const file = e.target.files[0];
@@ -146,9 +153,50 @@ const onSubmit = async () => {
 </script>
 
 <style scoped>
-.form-group { margin-bottom: 16px; display: flex; flex-direction: column; }
-input, select { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; }
-.preview img { max-width: 120px; max-height: 160px; object-fit: cover; border-radius: 6px; border: 1px solid #ccc; margin-top: 8px; }
-.btn.submit { background-color: #42a5f5; color: white; padding: 10px 16px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 500; transition: all 0.2s; }
-.btn.submit:hover { background-color: #1e88e5; transform: translateY(-2px); }
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  gap: 16px;
+}
+
+.col {
+  flex: 1;
+}
+
+input,
+select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.preview img {
+  max-width: 120px;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-top: 8px;
+}
+
+.btn.submit {
+  background-color: #42a5f5;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn.submit:hover {
+  background-color: #1e88e5;
+  transform: translateY(-2px);
+}
 </style>

@@ -6,7 +6,7 @@
         placeholder="Tìm thể loại..."
         class="search-input"
       />
-      <button class="btn-primary" @click="goAdd">Thêm thể loại</button>
+      <button class="btn add" @click="goAdd">+ Thêm thể loại</button>
     </div>
 
     <div v-if="loading" class="loading">Đang tải danh sách...</div>
@@ -15,7 +15,7 @@
       <table>
         <thead>
           <tr>
-            <th>ID</th>
+            <th>Mã thể loại</th>
             <th>Tên thể loại</th>
             <th>Mô tả</th>
             <th>Hành động</th>
@@ -27,10 +27,11 @@
             <td>{{ cat.TenTL }}</td>
             <td>{{ cat.MoTa || "-" }}</td>
             <td>
-              <button class="btn-edit" @click="goEdit(cat.MaTL)">Sửa</button>
-              <button class="btn-delete" @click="handleDelete(cat.MaTL)">Xóa</button>
+              <button class="btn edit" @click="goEdit(cat.MaTL)">Sửa</button>
+              <button class="btn delete" @click="handleDelete(cat.MaTL)">Xóa</button>
             </td>
           </tr>
+
           <tr v-if="filteredCategories.length === 0">
             <td colspan="4" class="empty">Không tìm thấy thể loại nào</td>
           </tr>
@@ -70,7 +71,7 @@ const handleDelete = async (id) => {
   if (!confirm("Bạn có chắc muốn xóa thể loại này?")) return;
   try {
     await categoryService.delete(id);
-    alert("Xóa thành công");
+    alert("Xóa thành công!");
     fetchCategories();
   } catch (err) {
     alert("Lỗi xóa: " + err.message);
@@ -79,9 +80,7 @@ const handleDelete = async (id) => {
 
 const filteredCategories = computed(() =>
   categories.value.filter((c) =>
-    (c.TenTL || "")
-      .toLowerCase()
-      .includes(searchText.value.toLowerCase())
+    (c.TenTL || "").toLowerCase().includes(searchText.value.toLowerCase())
   )
 );
 </script>
@@ -110,18 +109,35 @@ const filteredCategories = computed(() =>
   min-width: 200px;
 }
 
-.btn-primary {
-  background: #1a73e8;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 6px;
+.btn {
+  padding: 6px 12px;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
-.btn-primary:hover {
-  background: #1669c1;
+.btn.add {
+  background-color: #42a5f5;
+  color: white;
 }
+
+.btn.edit {
+  background-color: #64b5f6;
+  color: white;
+  margin-right: 6px;
+}
+
+.btn.delete {
+  background-color: #ef5350;
+  color: white;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
 
 .table-container {
   overflow-x: auto;
@@ -161,25 +177,4 @@ tr:hover {
   text-align: center;
   color: #555;
 }
-
-.btn-edit {
-  background: #ffb300;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 10px;
-  margin-right: 5px;
-  cursor: pointer;
-}
-.btn-edit:hover { opacity: 0.85; }
-
-.btn-delete {
-  background: #d32f2f;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 10px;
-  cursor: pointer;
-}
-.btn-delete:hover { opacity: 0.85; }
 </style>
